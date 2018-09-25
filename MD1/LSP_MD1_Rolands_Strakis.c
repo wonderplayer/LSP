@@ -13,11 +13,11 @@ struct Person{
 
 struct Tree{
 	Tree *next;
-	Person *person[100];
+	Person **person;
 	int size;
 };
 
-Tree tree ;
+Tree *tree;
 
 char CompareType(char *type){
 	int i = 0;
@@ -65,81 +65,112 @@ char CompareType(char *type){
 
 Tree *AddNewTree(char *personName, char *motherName, char *fatherName){
 	fprintf(stdout, "INFO: In AddNewTree function\n");
-	Tree *newTree = &(Tree){.size = 0, .next = 0};
+	Tree *newTree = malloc(sizeof(Tree));
+	Person *mother = malloc(sizeof(Person));
+	Person *person = malloc(sizeof(Person));
+	Person *father = malloc(sizeof(Person));
+
+	newTree->size = 0;
+	newTree->next = 0;
+	newTree->person = malloc(100 * sizeof(Person));
+
 	fprintf(stdout, "Writing '%s %p'\n", personName, personName);
-	Person *person;
-	fprintf(stdout, "Person memory '%s %p'", person->name, person->name);
 	person->name = personName;
 	person->generation = 0;
-	fprintf(stdout, "Person memory '%s %p'", person->name, person->name);
-	fprintf(stdout, "Writing '%s %p'\n", fatherName, fatherName);
-	Person *father = &(Person) {fatherName, -1};
-	fprintf(stdout, "Writing '%s %p'\n", motherName, motherName);
-	Person *mother = &(Person) {motherName, -1};
-
 	newTree->person[0] = person;
-	fprintf(stdout, "INFO: Ierakstija: '%s'\n", newTree->person[0]->name);
-	newTree->person[1] = father;
-	newTree->person[2] = mother;
-	newTree->size = 3;
+	newTree->size++;
+
+	if(fatherName != ""){
+		fprintf(stdout, "Writing '%s %p'\n", fatherName, fatherName);
+		father->name = fatherName;
+		father->generation = -1;
+		newTree->person[1] = father;
+		newTree->size++;
+	}
+
+	if(motherName != ""){
+		fprintf(stdout, "Writing '%s %p'\n", motherName, motherName);
+		mother->name = motherName;
+		mother->generation = -1;
+		newTree->person[2] = mother;
+		newTree->size++;
+	}
+
+	person = 0;
+	father = 0;
+	mother = 0;
 
 	return newTree;
 }
 
 void CreateNewTree(char *personName, char *motherName, char *fatherName){
 	fprintf(stdout, "INFO: In CreateNewTree function\n");
-	Tree *p = &tree;
-	if(p->size == 0){
-		fprintf(stdout, "Writing '%s %p'\n", personName, personName);
-		Person person;
-		Person *personP = &person;
-		fprintf(stdout, "Person memory '%p'\n", personP->name);
-		personP->name = (char *) malloc(60);
-		strcpy(personP->name, personName);
-		personP->generation = 0;
-		fprintf(stdout, "Person memory '%s %p'\n", personP->name, personP->name);
-		fprintf(stdout, "Writing '%s %p'\n", fatherName, fatherName);
-		fprintf(stdout, "Writing '%s %p'\n", fatherName, fatherName);
-		Person *father = &(Person) {fatherName, -1};
-		fprintf(stdout, "Writing '%s %p'\n", motherName, motherName);
-		Person *mother = &(Person) {motherName, -1};
+	Tree *p = tree;
+	Person *person = malloc(sizeof(Person));
+	Person *father = malloc(sizeof(Person));
+	Person *mother = malloc(sizeof(Person));
 
-		p->person[0] = personP;
-		fprintf(stdout, "INFO: Ierakstija: '%s %p'\n", p->person[0]->name, p->person[0]->name);
-		p->person[1] = father;
-		p->person[2] = mother;
-		p->size = 3;
+	if(p->size == 0){
+
+		fprintf(stdout, "Writing '%s %p'\n", personName, personName);
+		person->name = personName;
+		person->generation = 0;
+		p->person[0] = person;
+		p->size++;
+
+		if(fatherName != ""){
+			fprintf(stdout, "Writing '%s %p'\n", fatherName, fatherName);
+			father->name = fatherName;
+			father->generation = -1;
+			p->person[1] = father;
+			p->size++;
+		}
+
+		if(motherName != ""){
+			fprintf(stdout, "Writing '%s %p'\n", motherName, motherName);
+			mother->name = motherName;
+			mother->generation = -1;
+			p->person[2] = mother;
+			p->size++;
+		}
+
+		person = 0;
+		father = 0;
+		mother = 0;
+
 		return;
 	}
 
 	while(p->next != 0) p = p->next;
 
 	p->next = AddNewTree(personName, motherName, fatherName);
+
+	p = 0;
 }
 
-int FindMembers(char *personName, char *fatherName, char *motherName, Tree *pTree, Tree *fTree, Tree *mTree,  Tree *curr){
+void FindMembers(char *personName, char *fatherName, char *motherName, Tree *pTree, Tree *fTree, Tree *mTree,  Tree *curr, Person *parent){
 	fprintf(stdout, "In FindMembers function\n");
 	int i;
-	int generation = 0;
 	for(i = 0; i < curr->size; i++){
 		fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, personName);
-		if(curr->person[i]->name == personName){
+		if(strcmp(curr->person[i]->name, personName) == 0){
 			pTree = curr;
-			generation = curr->person[i]->generation;
 		}
+
 		fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, fatherName);
-		if(curr->person[i]->name == fatherName){
+		if(strcmp(curr->person[i]->name, fatherName) == 0){
+			fprintf(stdout, "Atrada!\n");
 			fTree = curr;
-			generation = curr->person[i]->generation + 1;
+			if(parent == 0) parent = curr->person[i];
 		}
+
 		fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, motherName);
-		if(curr->person[i]->name == motherName){
+		if(strcmp(curr->person[i]->name, motherName) == 0){
+			fprintf(stdout, "Atrada!\n");
 			mTree = curr;
-			generation = curr->person[i]->generation + 1;
+			if(parent == 0) parent = curr->person[i];
 		}
 	}
-
-	return generation;
 }
 
 void AddMember(char *personName, char *motherName, char *fatherName){
@@ -147,8 +178,9 @@ void AddMember(char *personName, char *motherName, char *fatherName){
 	Tree *pTree = 0;
 	Tree *fTree = 0;
 	Tree *mTree = 0;
-	Tree *p = &tree;
-	int generation;
+	Tree *p = tree;
+	Person *parent = 0;
+	Person *person = malloc(sizeof(Person));
 
 	if(personName[0] == '\0' && motherName[0] == '\0' && fatherName[0] == '\0'){
 		fprintf(stdout, "Tuksi dati\n");
@@ -156,22 +188,29 @@ void AddMember(char *personName, char *motherName, char *fatherName){
 	}
 
 	while(p != 0){
-		generation = FindMembers(personName, fatherName, motherName, pTree, fTree, mTree, p);
+		FindMembers(personName, fatherName, motherName, pTree, fTree, mTree, p, parent);
 		p = p->next;
 	}
 
 	if(pTree == 0 && mTree == 0 && fTree == 0){
 		fprintf(stdout, "Needs to create new tree\n");
 		CreateNewTree(personName, motherName, fatherName);
-		fprintf(stdout, "INFO: Ierakstija: '%s %p'\n", tree.person[0]->name, tree.person[0]->name);
-		return;
 	}
 
-	if(pTree == 0 && fTree == mTree){
-		Person person = {personName, generation};
-		fTree->person[fTree->size] = &person;
-		return;
+	if(pTree == 0 && fTree == mTree && fTree != 0){
+		fprintf(stdout, "Adding new person '%s'\n", personName);
+		person->name = personName;
+		person->generation = parent->generation + 1;
+		fTree->person[fTree->size] = person;
+		fTree->size++;
 	}
+
+	parent = 0;
+	pTree = 0;
+	fTree = 0;
+	mTree = 0;
+	p = 0;
+	person = 0;
 }
 
 
@@ -184,8 +223,10 @@ int main(){
 	char *mate = (char *) malloc(60);
 	char *tevs = (char *) malloc(60);
 	char mType;
-	tree.next = 0;
-	tree.size = 0;
+	tree = malloc(sizeof(Tree));
+	tree->next = 0;
+	tree->size = 0;
+	tree->person = malloc(100 * sizeof(Person));
 
 	fgets(buffer, sizeof(buffer), stdin);
 	sscanf(buffer,"%s %s\n", type, name);
@@ -196,12 +237,9 @@ int main(){
 		if (buffer[0] == '\n'){
 			fprintf(stdout, "Padod datus: VARDS '%s'\tMATE '%s'\tTEVS '%s'\n", vards, mate, tevs);
 			AddMember(vards, mate, tevs);
-			fprintf(stdout, "INFO: Ierakstija: '%s %p'\n", tree.person[0]->name, tree.person[0]->name);
-			fprintf(stdout, "INFO: Ierakstija: '%s %p'\n", tree.person[0]->name, tree.person[0]->name);
-			fprintf(stdout, "INFO: Ierakstija: '%s %p'\n", tree.person[0]->name, tree.person[0]->name);
-			/*mate = "";
-			vards = "";
-			tevs = "";*/
+			vards = malloc(60);
+			mate = malloc(60);
+			tevs = malloc(60);
 		}
 
 		mType = CompareType(type);
@@ -222,11 +260,32 @@ int main(){
 				break;
 		}
 
-		type[0] = '\0';
+		type = malloc(6);
 		name = malloc(60);
 		fgets(buffer, sizeof(buffer), stdin);
 		sscanf(buffer,"%s %s\n", type, name);
 	}
+
+	free(type);
+	free(name);
+	free(vards);
+	free(mate);
+	free(tevs);
+
+	type = 0;
+	name = 0;
+	vards = 0;
+	mate = 0;
+	tevs = 0;
+
+	Tree *p = tree;
+	while(p != 0){
+		p = tree->next;
+		free(tree);
+		tree = p;
+	}
+	p = 0;
+	tree = 0;
 
 /*
 	char buffer[100] = "Some string\n";
