@@ -223,7 +223,7 @@ void SortFamilies(){
 		p = p->next;
 	}
 }
-
+/*
 int GetGenerationDifference(Tree *fTree, Tree *mTree, char *fatherName, char *motherName){
 	fprintf(stdout, "In function GetGenerationDifference\n");
 	Person *father;
@@ -259,7 +259,7 @@ void MergeTrees(Tree *fTree, Tree *mTree, int genDiff){
 		fTree->size++;
 	}
 }
-
+*/
 void AddMember(char *personName, char *motherName, char *fatherName){
 	fprintf(stdout, "INFO: In AddMember function\n");
 	Tree *pTree = 0;
@@ -286,7 +286,7 @@ void AddMember(char *personName, char *motherName, char *fatherName){
 		fprintf(stdout, "Needs to create new tree\n");
 		CreateNewTree(personName, motherName, fatherName);
 	}
-
+/*
 	if(pTree == 0 && mTree != 0 && fTree != 0 && mTree != fTree){
 		fprintf(stdout, "Merge tree\n");
 		genDiff = GetGenerationDifference(fTree, mTree, fatherName, motherName);
@@ -297,7 +297,7 @@ void AddMember(char *personName, char *motherName, char *fatherName){
 		fTree->person[fTree->size] = person;
 		fTree->size++;
 	}
-
+*/
 	if(pTree == 0 && fTree == mTree && fTree != 0){
 		fprintf(stdout, "Adding new person '%s'\n", personName);
 		person->name = personName;
@@ -384,6 +384,11 @@ int main(){
 	tevs = 0;
 
 	SortFamilies();
+
+	fprintf(stdout, "\n");
+	fprintf(stdout, "Reals outputs\n");
+	fprintf(stdout, "\n");
+
 	PrintFamilies();
 
 	Tree *p = tree;
