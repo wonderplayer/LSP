@@ -36,13 +36,17 @@ void FindFilePath(DIR *d, char *prevPath){
 			else {
 				perror(dirName);
 			}
-			if(atrada == true) return;
+			if(atrada == true) break;
 			printf("\n");
 		}
 
 	}
 
 	closedir(d);
+	free(dirName);
+	dirName = NULL;
+	de = NULL;
+	nextD = NULL;
 
 	return;
 }
@@ -72,7 +76,8 @@ int main(int argc, char **argv){
 	}
 
 	free(path);
-	path = 0;
+	path = NULL;
+	fileName = NULL;
 
 	return 0;
 }
