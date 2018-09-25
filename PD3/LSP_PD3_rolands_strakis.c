@@ -5,17 +5,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef enum {true, false} bool;
 char *fileName;
+bool atrada = false;
 
-char *FindFilePath(DIR *d, char *prevPath){
+void FindFilePath(DIR *d, char *prevPath){
 	struct dirent *de;
 	DIR *nextD;
-	char *path = malloc(256);
-	char dirName[256];
+	char *dirName = malloc(256);
 
 	while((de = readdir(d)) != NULL){
-		printf("Atvera!\n");
 		printf("Apskata: '%s' '%d'\n", de->d_name, de->d_type);
+
+		if(strcmp(de->d_name, fileName) == 0){
+			printf("%s/%s\n", prevPath, de->d_name);
+			atrada = true;
+			return;
+		}
+
 		if((strcmp(de->d_name, ".")) != 0 && (strcmp(de->d_name, "..")) != 0 && de->d_type == 4){
 			printf("Atrada direktoriju '%s'\n", de->d_name);
 			strcat(dirName, prevPath);
@@ -24,32 +31,23 @@ char *FindFilePath(DIR *d, char *prevPath){
 			printf("Ver vala '%s'\n", dirName);
 			nextD = opendir(dirName);
 			if(nextD != NULL){
-				path = FindFilePath(nextD, dirName);
+				FindFilePath(nextD, dirName);
 			}
 			else {
 				perror(dirName);
 			}
+			if(atrada == true) return;
 			printf("\n");
 		}
 
 	}
 
 	closedir(d);
-	
-	free(de);
-	de = 0;
-	free(path);
-	path = 0;
-	free(nextD);
-	nextD = 0;
 
-	return "Kaut kas";
+	return;
 }
 
 int main(int argc, char **argv){
-	fileName = malloc(256);
-	struct stat buf;
-	int exists;
 	DIR *d;
 	char *path = malloc(256);
 
@@ -58,24 +56,19 @@ int main(int argc, char **argv){
 		return -1;
 	}
 
-	exists = stat(argv[1], &buf);
-	if (exists < 0)
-	{
-		perror("Faila atversanas kluda: ");
-		return -1;
-	}
-	else{
-		printf("Atvera failu '%s' ar izmeru '%ld'\n", argv[1], buf.st_size);
-	}
 	fileName = argv[1];
 
 	d = opendir(argv[2]);
 	if(d != NULL){
-		fileName = FindFilePath(d, argv[2]);
-	} 
+		FindFilePath(d, argv[2]);
+	}
 	else {
 		perror("Kluda direktorijas atversana: ");
 		return -1;
+	}
+
+	if(atrada == false){
+		printf("Neatrada failu '%s'\n", fileName);
 	}
 
 	free(path);

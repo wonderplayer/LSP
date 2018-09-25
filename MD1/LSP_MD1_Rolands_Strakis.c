@@ -189,32 +189,6 @@ Tree *FindMother(char *motherName, Tree *curr){
 	}
 	return 0;
 }
-/*
-void FindMembers(char *personName, char *fatherName, char *motherName, Tree *pTree, Tree *fTree, Tree *mTree,  Tree *curr, Person *parent){
-	fprintf(stdout, "In FindMembers function\n");
-	int i;
-	for(i = 0; i < curr->size; i++){
-		fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, personName);
-		if(strcmp(curr->person[i]->name, personName) == 0){
-			pTree = curr;
-		}
-
-		fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, fatherName);
-		if(strcmp(curr->person[i]->name, fatherName) == 0){
-			fprintf(stdout, "Atrada!\n");
-			fTree = curr;
-			if(parent == 0) parent = curr->person[i];
-		}
-
-		fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, motherName);
- 		if(strcmp(curr->person[i]->name, motherName) == 0){
-			fprintf(stdout, "Atrada!\n");
-			mTree = curr;
-			if(parent == 0) parent = curr->person[i];
-		}
-	}
-}
-*/
 
 void AddMember(char *personName, char *motherName, char *fatherName){
 	fprintf(stdout, "INFO: In AddMember function\n");
