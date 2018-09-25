@@ -152,6 +152,7 @@ void CreateNewTree(char *personName, char *motherName, char *fatherName){
 Tree *FindPerson(char *personName, Tree *curr){
 	fprintf(stdout, "In FindPerson function\n");
 	int i;
+	if(personName[0] == '\0') return NULL;
 	for(i = 0; i < curr->size; i++){
 		fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, personName);
 		if(strcmp(curr->person[i]->name, personName) == 0){
@@ -165,29 +166,98 @@ Tree *FindPerson(char *personName, Tree *curr){
 Tree *FindFather(char *fatherName, Tree *curr){
 	fprintf(stdout, "In FindFather function\n");
 	int i;
+	if(fatherName[0] == '\0') return NULL;
 	for(i = 0; i < curr->size; i++){
-        fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, fatherName);
-        if(strcmp(curr->person[i]->name, fatherName) == 0){
-            fprintf(stdout, "Atrada!\n");
-            if(parent == 0) parent = curr->person[i];
-            return curr;
-        }
+	        fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, fatherName);
+	        if(strcmp(curr->person[i]->name, fatherName) == 0){
+	            fprintf(stdout, "Atrada!\n");
+	            if(parent == 0) parent = curr->person[i];
+	            return curr;
+	        }
 	}
 	return 0;
 }
 
 Tree *FindMother(char *motherName, Tree *curr){
-    fprintf(stdout, "In FindMother function\n");
+	fprintf(stdout, "In FindMother function\n");
 	int i;
+	if(motherName[0] == '\0') return NULL;
 	for(i = 0; i < curr->size; i++){
-        fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, motherName);
-        if(strcmp(curr->person[i]->name, motherName) == 0){
-            fprintf(stdout, "Atrada!\n");
-            if(parent == 0) parent = curr->person[i];
-            return curr;
-        }
+	        fprintf(stdout, "Comparing '%s' with '%s'\n", curr->person[i]->name, motherName);
+	        if(strcmp(curr->person[i]->name, motherName) == 0){
+	            fprintf(stdout, "Atrada!\n");
+	            if(parent == 0) parent = curr->person[i];
+	            return curr;
+	        }
 	}
 	return 0;
+}
+
+void PrintFamilies(){
+	Tree *p = tree;
+	int i;
+	while(p != NULL){
+		for(i = 0; i < p->size; i++){
+			fprintf(stdout, "%s\t%d\n", p->person[i]->name, p->person[i]->generation);
+		}
+		p = p->next;
+		fprintf(stdout, "\n");
+	}
+
+}
+
+void SortFamilies(){
+	Tree *p = tree;
+	Person *temp;
+	int i, j;
+	while(p != NULL){
+		for(i = 0; i < p->size - 1; i++){
+			for(j = 0; j < p->size - i - 1; j++){
+				if(p->person[i]->generation > p->person[i+1]->generation){
+					temp = p->person[i];
+					p->person[i] = p->person[i+1];
+					p->person[i+1] = temp;
+				}
+			}
+		}
+		p = p->next;
+	}
+}
+
+int GetGenerationDifference(Tree *fTree, Tree *mTree, char *fatherName, char *motherName){
+	fprintf(stdout, "In function GetGenerationDifference\n");
+	Person *father;
+	Person *mother;
+	int i;
+
+	for(i = 0; i < fTree->size; i++)
+		if(strcmp(fTree->person[i]->name, fatherName) == 0){
+			father = fTree->person[i];
+			parent = father;
+			break;
+		}
+
+	for(i = 0; i < mTree->size; i++)
+		if(strcmp(mTree->person[i]->name, motherName) == 0){
+			mother = mTree->person[i];
+			break;
+		}
+
+	return father->generation - mother->generation;
+}
+
+void MergeTrees(Tree *fTree, Tree *mTree, int genDiff){
+	int i;
+
+	if(fTree->size + mTree->size > sizeof(fTree->person)){
+		fprintf(stdout, "Realloc no '%ld' uz '%d'\n", sizeof(fTree->person), fTree->size + mTree->size);
+		realloc(fTree->person, sizeof(fTree->person) + mTree->size);
+	}
+	for(i = 0; i < mTree->size; i++){
+		mTree->person[i]->generation = mTree->person[i]->generation + genDiff;
+		fTree->person[fTree->size] = mTree->person[i];
+		fTree->size++;
+	}
 }
 
 void AddMember(char *personName, char *motherName, char *fatherName){
@@ -198,6 +268,7 @@ void AddMember(char *personName, char *motherName, char *fatherName){
 	Tree *p = tree;
 	parent = 0;
 	Person *person = malloc(sizeof(Person));
+	int genDiff;
 
 	if(personName[0] == '\0' && motherName[0] == '\0' && fatherName[0] == '\0'){
 		fprintf(stdout, "Tuksi dati\n");
@@ -205,15 +276,26 @@ void AddMember(char *personName, char *motherName, char *fatherName){
 	}
 
 	while(p != 0){
-		pTree = FindPerson(personName, p);
-		fTree = FindFather(fatherName, p);
-		mTree = FindMother(motherName, p);
+		if(pTree == 0) pTree = FindPerson(personName, p);
+		if(fTree == 0) fTree = FindFather(fatherName, p);
+		if(mTree == 0) mTree = FindMother(motherName, p);
 		p = p->next;
 	}
 
 	if(pTree == 0 && mTree == 0 && fTree == 0){
 		fprintf(stdout, "Needs to create new tree\n");
 		CreateNewTree(personName, motherName, fatherName);
+	}
+
+	if(pTree == 0 && mTree != 0 && fTree != 0 && mTree != fTree){
+		fprintf(stdout, "Merge tree\n");
+		genDiff = GetGenerationDifference(fTree, mTree, fatherName, motherName);
+		fprintf(stdout, "genDiff: '%d'\n", genDiff);
+		MergeTrees(fTree, mTree, genDiff);
+		person->name = personName;
+		person->generation = parent->generation + 1;
+		fTree->person[fTree->size] = person;
+		fTree->size++;
 	}
 
 	if(pTree == 0 && fTree == mTree && fTree != 0){
@@ -289,21 +371,20 @@ int main(){
 	}
 
 	if(vards[0] != '\0'){
-        fprintf(stdout, "Padod datus: VARDS '%s'\tMATE '%s'\tTEVS '%s'\n", vards, mate, tevs);
-        AddMember(vards, mate, tevs);
+        	fprintf(stdout, "Padod datus: VARDS '%s'\tMATE '%s'\tTEVS '%s'\n", vards, mate, tevs);
+        	AddMember(vards, mate, tevs);
 	}
-
 	free(type);
 	free(name);
-	free(vards);
-	free(mate);
-	free(tevs);
 
 	type = 0;
 	name = 0;
 	vards = 0;
 	mate = 0;
 	tevs = 0;
+
+	SortFamilies();
+	PrintFamilies();
 
 	Tree *p = tree;
 	while(p != 0){
