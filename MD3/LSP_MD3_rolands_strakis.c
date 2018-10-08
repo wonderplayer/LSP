@@ -31,6 +31,7 @@ struct Duplicate{
 
 Node *tree;
 Duplicate *duplicates;
+bool dParam;
 
 void PrintTabs(unsigned char tabCount){
 	int i;
@@ -58,14 +59,16 @@ void FreeTree(Node *p){
 
 void PrintDuplicates(){
 	Duplicate *d = duplicates;
-	DuplicateFile *df = d->df;
+	DuplicateFile *df;
 	struct stat buf;
 	int error;
 	char timeBuffer[26];
 	struct tm *tm_info;
 	while(d != NULL){
 		df = d->df;
-		printf("Ver: '%s'\n", df->path);
+
+		if(df == NULL) return;
+
 		error = stat(df->path, &buf);
 		if(error < 0){
 			perror("PrintDuplicates: ");
@@ -126,7 +129,6 @@ void AddDuplicate(char *path, char *name, Node *n){
 	printf("Ieksa AddDuplicate\n");
 	Duplicate *p = duplicates;
 	Duplicate *prev = duplicates;
-	int res;
 	if(p->df == NULL){
 		printf("Veido pirmo failu duplikatu ierakstu failam '%s'\n", name);
 		p->next = NULL;
@@ -149,15 +151,10 @@ void AddDuplicate(char *path, char *name, Node *n){
 	}
 	else {
 		while(p != NULL){
-			printf("Salidzina '%s' ar '%s' ", p->df->name, name);
-			res = strcmp(p->df->name, name);
-			printf("%d\n", res);
 			if(strcmp(p->df->name, name) == 0){
 				AddDuplicateRecord(path, name, p);
 				return;
 			}
-			printf("%ld\n", p);
-			printf("%ld\n", p->next);
 			prev = p;
 			p = p->next;
 		}
@@ -225,6 +222,17 @@ void AddFileToRecord(char *path, char *name, unsigned char tabCount){
 				}
 				else {
 					if(currentFile.st_size == checkFile.st_size){
+						if(dParam == true){
+							if(currentFile.st_mtime == checkFile.st_mtime){
+								printf("Datumi sakrit!\n");
+								AddDuplicate(path, name, p);
+								return;
+							}
+							printf("Datumi nesakrit!\n");
+							p = p->right;
+							continue;
+						}
+
 						AddDuplicate(path, name, p);
 						return;
 					}
@@ -294,6 +302,7 @@ void FindFilePath(DIR *d, char *prevPath, unsigned char tabCount){
 
 int main(int argc, char **argv){
 	int i;
+	dParam = false;
 	for(i = 1; i < argc; i++){
 		if(strcmp(argv[i], "-h") == 0){
 			printf("\tPamaciba par argumentiem\n");
@@ -302,8 +311,8 @@ int main(int argc, char **argv){
 			printf("\t-h\tPalidziba\n");
 			return 0;
 		}
+		if(strcmp(argv[i], "-d") == 0) dParam = true;
 	}
-
 
 	DIR *d;
 	tree = malloc(sizeof(Node));
