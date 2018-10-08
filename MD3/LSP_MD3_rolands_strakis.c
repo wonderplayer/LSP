@@ -293,6 +293,18 @@ void FindFilePath(DIR *d, char *prevPath, unsigned char tabCount){
 }
 
 int main(int argc, char **argv){
+	int i;
+	for(i = 1; i < argc; i++){
+		if(strcmp(argv[i], "-h") == 0){
+			printf("\tPamaciba par argumentiem\n");
+			printf("\t-d\tSalidzinat failus ari pec datuma\n");
+			printf("\t-m\tAprekina failu MD5 vertibas (Nav implementets)\n");
+			printf("\t-h\tPalidziba\n");
+			return 0;
+		}
+	}
+
+
 	DIR *d;
 	tree = malloc(sizeof(Node));
 	tree->left = NULL;
