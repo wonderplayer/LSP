@@ -33,16 +33,8 @@ Node *tree;
 Duplicate *duplicates;
 bool dParam;
 
-void PrintTabs(unsigned char tabCount){
-	int i;
-	for(i = 0; i < tabCount; i++){
-		printf("\t");
-	}
-}
-
 void PrintTreePreOrder(Node *p){
 	if(p == NULL) return;
-	printf("Atrada -> '%s/%s'\n", p->path, p->name);
 	PrintTreePreOrder(p->left);
 	PrintTreePreOrder(p->right);
 }
@@ -51,7 +43,6 @@ void FreeTree(Node *p){
 	if(p == NULL) return;
 	FreeTree(p->left);
 	FreeTree(p->right);
-	printf("Free '%s/%s'\n", p->path, p->name);
 	free(p->name);
 	free(p->path);
 	free(p);
@@ -77,7 +68,7 @@ void PrintDuplicates(){
 		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M", tm_info);
 		printf("=== %s %ld %s\n", timeBuffer, buf.st_size, df->name);
 		while(df != NULL){
-			printf("%s\n", df->path);
+			printf("%s\n", df->path + 2);
 			df = df->next;
 		}
 		printf("\n");
@@ -110,8 +101,6 @@ void FreeDuplicates(){
 }
 
 void AddDuplicateRecord(char *path, char *name, Duplicate *p){
-	printf("Ieksa AddDuplicateRecord\n");
-	printf("Liek ieksa '%s/%s'\n", path, name);
 	DuplicateFile *df = p->df;
 	while(df->next != NULL) df = df->next;
 	df->next = malloc(sizeof(DuplicateFile));
@@ -126,11 +115,9 @@ void AddDuplicateRecord(char *path, char *name, Duplicate *p){
 }
 
 void AddDuplicate(char *path, char *name, Node *n){
-	printf("Ieksa AddDuplicate\n");
 	Duplicate *p = duplicates;
 	Duplicate *prev = duplicates;
 	if(p->df == NULL){
-		printf("Veido pirmo failu duplikatu ierakstu failam '%s'\n", name);
 		p->next = NULL;
 		p->df = malloc(sizeof(DuplicateFile));
 		p->df->next = NULL;
@@ -158,7 +145,6 @@ void AddDuplicate(char *path, char *name, Node *n){
 			prev = p;
 			p = p->next;
 		}
-		printf("Pievieno duplikatus failam '%s'\n", name);
 		p = malloc(sizeof(Duplicate));
 		p->next = NULL;
 		p->df = malloc(sizeof(DuplicateFile));
@@ -189,14 +175,12 @@ void AddFileToRecord(char *path, char *name, unsigned char tabCount){
 	struct stat checkFile;
 	char *fullCurrentFilePath = malloc(256);
 	char *fullCheckFilePath = malloc(256);
-	PrintTabs(tabCount);
 
 	if(tree->path == NULL){
 		p->path = malloc(strlen(path));
 		p->name = malloc(strlen(name));
 		strcpy(p->path, path);
 		strcpy(p->name, name);
-		printf("Pievienoja '%s/%s'\n", p->path, p->name);
 	}
 	else {
 		while(p != NULL){
@@ -224,11 +208,9 @@ void AddFileToRecord(char *path, char *name, unsigned char tabCount){
 					if(currentFile.st_size == checkFile.st_size){
 						if(dParam == true){
 							if(currentFile.st_mtime == checkFile.st_mtime){
-								printf("Datumi sakrit!\n");
 								AddDuplicate(path, name, p);
 								return;
 							}
-							printf("Datumi nesakrit!\n");
 							p = p->right;
 							continue;
 						}
@@ -237,7 +219,6 @@ void AddFileToRecord(char *path, char *name, unsigned char tabCount){
 						return;
 					}
 					else{
-						printf("Dazadz izmers!\n");
 						p = p->right;
 					}
 				}
@@ -257,7 +238,6 @@ void AddFileToRecord(char *path, char *name, unsigned char tabCount){
 		else
 			prev->right = p;
 
-		printf("Pievienoja '%s/%s'\n", p->path, p->name);
 	}
 }
 
@@ -268,19 +248,13 @@ void FindFilePath(DIR *d, char *prevPath, unsigned char tabCount){
 	char *dirName = malloc(256);
 
 	while((de = readdir(d)) != NULL){
-		PrintTabs(tabCount);
-		printf("Apskata: '%s' '%d'\n", de->d_name, de->d_type);
 		if(de->d_type == 8){
 			AddFileToRecord(prevPath, de->d_name, tabCount);
 		}
 		else if((strcmp(de->d_name, ".")) != 0 && (strcmp(de->d_name, "..")) != 0 && de->d_type == 4){
-			PrintTabs(tabCount);
-			printf("Atrada direktoriju '%s'\n", de->d_name);
 			strcpy(dirName, prevPath);
 			strcat(dirName, "/");
 			strcat(dirName, de->d_name);
-			PrintTabs(tabCount);
-			printf("Ver vala '%s'\n", dirName);
 			nextD = opendir(dirName);
 			if(nextD != NULL){
 				FindFilePath(nextD, dirName, tabCount + 1);
