@@ -42,8 +42,8 @@ unsigned char myBuffer[MY_BUFFER_SIZE];
 blockInfoNode *first;
 blockInfoNode *last;
 int chunksCount = 0;
+int chunksSum = 0;
 int sizesCount = 0;
-bool nextFitSecondTry = false;
 int didntFit = 0;
 
 void readFile(FILE *source, int *array, char fileType) {
@@ -59,12 +59,34 @@ void readFile(FILE *source, int *array, char fileType) {
                 sizesCount++;
                 break;
             case 'C':
+                chunksSum += (int) strtol(line, NULL, 0);
                 chunksCount++;
                 break;
             default:
                 break;
         }
     }
+}
+
+void addNewBlockNode(blockInfoNode *curr){
+
+    blockInfoNode *new;
+
+    new = malloc(sizeof(blockInfoNode)); //Fill new free block data
+    new->isFree = true;
+    new->blockSize = curr->blockSize - curr->takenSpace;
+    new->takenSpace = 0;
+    new->p = curr->p + curr->takenSpace;
+
+    if(curr->next == NULL){ //Insert new node into list
+        new->next = NULL;
+        curr->next = new;
+    }
+    else{
+        new->next = curr->next;
+        curr->next = new;
+    }
+    chunksCount++;
 }
 
 bool allocateFreeChunks(char *chunksFile) {
@@ -78,6 +100,10 @@ bool allocateFreeChunks(char *chunksFile) {
     } else {
         int chunksSizes[1024] = {0};
         readFile(source, chunksSizes, 'C');
+        if(chunksSum > MY_BUFFER_SIZE){
+            printf("Can not insert %d bytes of chunks into %d bytes long array\n", chunksSum, MY_BUFFER_SIZE);
+            return false;
+        }
 
         first = NULL;
         last = NULL;
@@ -114,6 +140,7 @@ void FirstFit(int *sizes) {
 
     float start, end; // For getting execution time
     start = clock(); // Start taking time
+
     int i = 0;
     while (sizes[i] != 0) { // Loop through sizes
         bool insertSuccess = false; // Expect the worst
@@ -124,6 +151,10 @@ void FirstFit(int *sizes) {
                 curr->takenSpace = sizes[i]; // Register the size in chunk
                 curr->isFree = false; // Take possession on chunk
                 insertSuccess = true; // Take pride
+
+                if(sizes[i] < curr->blockSize){
+                    addNewBlockNode(curr);
+                }
                 printf("%d was inserted in %d\n", curr->takenSpace, curr->blockSize); // Print inserted size and chunk size
                 break;
             }
@@ -164,12 +195,11 @@ void NextFit(int *sizes){
 
     blockInfoNode *lastUsed = first;
     blockInfoNode *curr;
+
     bool insertSuccess;
     bool jumpToStart;
     int checkedCunks;
-    int notInsertedSizes[1024] = {0};
 
-    int k = 0;
     int i = 0;
     while(sizes[i] != 0){
         insertSuccess = false;
@@ -186,6 +216,11 @@ void NextFit(int *sizes){
                 curr->takenSpace = sizes[i];
                 curr->isFree = false;
                 insertSuccess = true;
+
+                if(sizes[i] < curr->blockSize){
+                    addNewBlockNode(curr);
+                }
+
                 printf("%d was inserted in %d\n", curr->takenSpace, curr->blockSize);
                 break;
             }
@@ -198,23 +233,8 @@ void NextFit(int *sizes){
         }
         if (!insertSuccess) { // If the unfortunate has happened and we couldn't allocate when we just print it
             printf("%d was not inserted!\n", sizes[i]);
-            notInsertedSizes[k] = sizes[i];
-            k++;
         }
         i++;
-    }
-
-    if(notInsertedSizes[0] != 0 && nextFitSecondTry == false){ //Set all chunks to "Free"
-        blockInfoNode *freeList = first;
-        while (freeList != NULL) {
-            if (!freeList->isFree) {
-                freeList->isFree = true;
-            }
-            freeList = freeList->next;
-        }
-        printf("NextFit second try for not inserted sizes:\n");
-        nextFitSecondTry = true;
-        NextFit(notInsertedSizes);
     }
 
     end = clock(); // Stop taking time
@@ -267,7 +287,7 @@ void BestFit(int* sizes) {
 
         } else {
             printf("%d was not inserted!\n", sizes[i]);
-		didntFit += sizes[i];
+            didntFit += sizes[i];
         }
 
         i++;
@@ -320,7 +340,7 @@ void WorstFit(int* sizes) {
 
         } else {
             printf("%d was not inserted!\n", sizes[i]);
-		didntFit += sizes[i];
+            didntFit += sizes[i];
         }
 
         i++;
@@ -357,7 +377,7 @@ int main(int argc, char **argv) {
     printf("3. Best fit\n");
     printf("4. Worst fit\n");
 
-    int chosenAlgorithm = 3;
+    int chosenAlgorithm = 1;
 //    scanf("%d", &chosenAlgorithm);
 
 
@@ -401,21 +421,21 @@ int main(int argc, char **argv) {
             } else {
                 int sizes[1024] = {0};
                 readFile(source, sizes, 'S');
-                    switch (chosenAlgorithm) {
-                        case 1:
-                            FirstFit(sizes);
-                            break;
-                        case 2:
-                            NextFit(sizes);
-                            break;
-                        case 3:
-                            BestFit(sizes);
-                            break;
-                        case 4:
-                            WorstFit(sizes);
-                            break;
-                    }
-		printf("Total block size that didn't fit: '%d'\n", didntFit);
+                switch (chosenAlgorithm) {
+                    case 1:
+                        FirstFit(sizes);
+                        break;
+                    case 2:
+                        NextFit(sizes);
+                        break;
+                    case 3:
+                        BestFit(sizes);
+                        break;
+                    case 4:
+                        WorstFit(sizes);
+                        break;
+                }
+                printf("Total block size that didn't fit: '%d'\n", didntFit);
                 return 0;
             }
         } else {
