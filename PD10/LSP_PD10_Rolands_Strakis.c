@@ -24,13 +24,11 @@ int main(void)
         /* in child code: read from socket, process arguments, write reply, exit*/
         char buf[256];
         read(sock[1], &buf, sizeof(buf));
-        printf("Child: read '%s'\n", buf);
+        printf("Berns: '%s'\n", buf);
 
         int first = 0;
 	int second = 0;
 	sscanf(buf, "%d %d", &first, &second);
-	printf("%s\n", buf);
-	printf("%d %d %d\n", first, second, first + second);
         sprintf(buf, "%d", first + second);
         write(sock[1], &buf, sizeof(buf));
 
@@ -40,12 +38,13 @@ int main(void)
         /* in parent code: write to socket, wait for reply, read it, and output it*/
 
         char input[20];
+	printf("Ievadiet divus skaitlus ar atstarpi starp tiem: ");
         scanf("%[^\n]", input);
 
         write(sock[0], &input, sizeof(input));
 
         read(sock[0], &input, sizeof(input));
-        printf("Parent: read '%s'\n", input);
+        printf("Vecaks: '%s'\n", input);
         close(sock[parentsocket]);
     }
 
