@@ -164,6 +164,7 @@ void FirstFit(int *sizes) {
 
         if (!insertSuccess) { // If the unfortunate has happened and we couldn't allocate when we just print it
             printf("%d was not inserted!\n", sizes[i]);
+		didntFit += sizes[i];
         }
 
         i++;
@@ -172,14 +173,16 @@ void FirstFit(int *sizes) {
 
     printf("Time required for execution: %f seconds.\n", (end - start) / CLOCKS_PER_SEC);
 
-    float combindedChunkSize;
-    float combindedTakenSpace;
+    float combindedChunkSize = 0;
+    float combindedTakenSpace = 0;
 
     blockInfoNode *curr = first;
     while (curr != NULL) { // Get total size of used chunks and taken space in those chunks
-        if (!curr->isFree) {
+        if (curr->isFree) {
             combindedChunkSize += curr->blockSize;
-            combindedTakenSpace += curr->takenSpace;
+		if(combindedTakenSpace < curr->blockSize){
+	        	combindedTakenSpace = curr->blockSize;
+		}
         }
 
         curr = curr->next;
@@ -233,6 +236,7 @@ void NextFit(int *sizes){
         }
         if (!insertSuccess) { // If the unfortunate has happened and we couldn't allocate when we just print it
             printf("%d was not inserted!\n", sizes[i]);
+		didntFit += sizes[i];
         }
         i++;
     }
@@ -241,18 +245,21 @@ void NextFit(int *sizes){
 
     printf("Time required for execution: %f seconds.\n", (end - start) / CLOCKS_PER_SEC);
 
-    float combindedChunkSize;
-    float combindedTakenSpace;
+    float combindedChunkSize = 0;
+    float combindedTakenSpace = 0;
 
-    blockInfoNode *tmp = first;
-    while (tmp != NULL) { // Get total size of used chunks and taken space in those chunks
-        if (!tmp->isFree) {
-            combindedChunkSize += tmp->blockSize;
-            combindedTakenSpace += tmp->takenSpace;
+    curr = first;
+    while (curr != NULL) { // Get total size of used chunks and taken space in those chunks
+        if (curr->isFree) {
+            combindedChunkSize += curr->blockSize;
+		if(combindedTakenSpace < curr->blockSize){
+	        	combindedTakenSpace = curr->blockSize;
+		}
         }
 
-        tmp = tmp->next;
+        curr = curr->next;
     }
+
     float fragmentedSpace = (1 - (combindedTakenSpace / combindedChunkSize)) * 100; // And calculate the fragmented space
 
     printf("Fragmented Space: %f %%\n", fragmentedSpace);
@@ -299,12 +306,16 @@ void BestFit(int* sizes) {
     float combindedChunkSize = 0;
     float combindedTakenSpace = 0;
 
-    blockInfoNode* current = first;
-    while (current != NULL) { // Get total size of used chunks and taken space in those chunks
-        combindedChunkSize += current->blockSize;
-        combindedTakenSpace += current->takenSpace;
+    blockInfoNode* curr = first;
+    while (curr != NULL) { // Get total size of used chunks and taken space in those chunks
+        if (curr->isFree) {
+            combindedChunkSize += curr->blockSize - curr->takenSpace;
+		if(combindedTakenSpace < curr->blockSize - curr->takenSpace){
+	        	combindedTakenSpace = curr->blockSize - curr->takenSpace;
+		}
+        }
 
-        current = current->next;
+        curr = curr->next;
     }
     float fragmentedSpace = (1 - (combindedTakenSpace / combindedChunkSize)) * 100; // And calculate the fragmented space
 
@@ -354,8 +365,12 @@ void WorstFit(int* sizes) {
 
     blockInfoNode* current = first;
     while (current != NULL) { // Get total size of used chunks and taken space in those chunks
-        combindedChunkSize += current->blockSize;
-        combindedTakenSpace += current->takenSpace;
+        if (current->isFree) {
+            combindedChunkSize += current->blockSize - current->takenSpace;
+		if(combindedTakenSpace < current->blockSize - current->takenSpace){
+	        	combindedTakenSpace = current->blockSize - current->takenSpace;
+		}
+        }
 
         current = current->next;
     }
@@ -377,7 +392,7 @@ int main(int argc, char **argv) {
     printf("3. Best fit\n");
     printf("4. Worst fit\n");
 
-    int chosenAlgorithm = 1;
+    int chosenAlgorithm = 4;
 //    scanf("%d", &chosenAlgorithm);
 
 
