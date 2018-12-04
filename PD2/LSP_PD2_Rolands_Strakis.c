@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     size_t nolasits, ierakstits;
 
     if (argc < 3)
-    {   
+    {
         return 0;
     }
 
@@ -51,9 +51,9 @@ int main(int argc, char *argv[]) {
 
     if(ierakstits){
       perror("Kopesanas kluda");
-      return -1;  
-    } 
-    
+      return -1;
+    }
+
     fclose(fin);
     fclose(fout);
 

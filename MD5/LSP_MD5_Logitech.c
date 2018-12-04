@@ -44,6 +44,7 @@ blockInfoNode *last;
 int chunksCount = 0;
 int sizesCount = 0;
 bool nextFitSecondTry = false;
+int didntFit = 0;
 
 void readFile(FILE *source, int *array, char fileType) {
     char *line = NULL;
@@ -154,7 +155,7 @@ void FirstFit(int *sizes) {
     }
     float fragmentedSpace = (1 - (combindedTakenSpace / combindedChunkSize)) * 100; // And calculate the fragmented space
 
-    printf("Fragmented Space: %f %%", fragmentedSpace);
+    printf("Fragmented Space: %f %%\n", fragmentedSpace);
 }
 
 void NextFit(int *sizes){
@@ -234,7 +235,7 @@ void NextFit(int *sizes){
     }
     float fragmentedSpace = (1 - (combindedTakenSpace / combindedChunkSize)) * 100; // And calculate the fragmented space
 
-    printf("Fragmented Space: %f %%", fragmentedSpace);
+    printf("Fragmented Space: %f %%\n", fragmentedSpace);
 }
 
 void BestFit(int* sizes) {
@@ -266,6 +267,7 @@ void BestFit(int* sizes) {
 
         } else {
             printf("%d was not inserted!\n", sizes[i]);
+		didntFit += sizes[i];
         }
 
         i++;
@@ -286,7 +288,7 @@ void BestFit(int* sizes) {
     }
     float fragmentedSpace = (1 - (combindedTakenSpace / combindedChunkSize)) * 100; // And calculate the fragmented space
 
-    printf("Fragmented Space: %f %%", fragmentedSpace);
+    printf("Fragmented Space: %f %%\n", fragmentedSpace);
 }
 
 void WorstFit(int* sizes) {
@@ -318,6 +320,7 @@ void WorstFit(int* sizes) {
 
         } else {
             printf("%d was not inserted!\n", sizes[i]);
+		didntFit += sizes[i];
         }
 
         i++;
@@ -338,7 +341,7 @@ void WorstFit(int* sizes) {
     }
     float fragmentedSpace = (1 - (combindedTakenSpace / combindedChunkSize)) * 100; // And calculate the fragmented space
 
-    printf("Fragmented Space: %f %%", fragmentedSpace);
+    printf("Fragmented Space: %f %%\n", fragmentedSpace);
 }
 
 int main(int argc, char **argv) {
@@ -354,8 +357,9 @@ int main(int argc, char **argv) {
     printf("3. Best fit\n");
     printf("4. Worst fit\n");
 
-    int chosenAlgorithm = 0;
-    scanf("%d", &chosenAlgorithm);
+    int chosenAlgorithm = 3;
+//    scanf("%d", &chosenAlgorithm);
+
 
     char chunksFile[50];
     char sizesFile[50];
@@ -397,11 +401,6 @@ int main(int argc, char **argv) {
             } else {
                 int sizes[1024] = {0};
                 readFile(source, sizes, 'S');
-                if (sizesCount > chunksCount) {
-                    printf("Can not allocate memory, sizes is more then chunks!");
-                    return 1;
-                } else {
-
                     switch (chosenAlgorithm) {
                         case 1:
                             FirstFit(sizes);
@@ -416,7 +415,7 @@ int main(int argc, char **argv) {
                             WorstFit(sizes);
                             break;
                     }
-                }
+		printf("Total block size that didn't fit: '%d'\n", didntFit);
                 return 0;
             }
         } else {
