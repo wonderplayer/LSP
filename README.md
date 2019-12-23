@@ -3,7 +3,9 @@ C valudas Linux kurss
 
 # Uzdevumu apraksts
 Pilns uzdevumu apraksts ir pieejams mājaslapā: http://andromeda.df.lu.lv/wiki/index.php/LU-LSP-b
+
 Mājasdarbu apraksts: http://andromeda.df.lu.lv/wiki/index.php/LU-LSP-b#Uzdevumi
+
 Īsumā par katru nu mājasdarbiem:
 - MD1 - Loģisks uzdevums uz iepazīšanos ar C valodas sintaksi un atmiņas pārvaldību Linux vidē. It kā kaut kas līdz galam nebija sanācis, ieguvu ap 60%
 - MD3 - Uzrakstīt programmu, kas apstaigā direktoriju koku un atrod tos failus kas ir duplikāti, respektīvi, atrodami vairākos eksemplāros. Izpildīju 80% no uzdevuma, bez MD5 salīdzināšanas
